@@ -1,16 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Registro</title>
+    <meta charset="UTF-8">
+    <title>Iniciar Sesión</title>
 </head>
 <body>
-    <h2>Registro de Usuario</h2>
-    <form method="POST">
-        <input type="text" name="nombre" placeholder="Nombre" required><br>
-        <input type="email" name="correo" placeholder="Correo" required><br>
-        <input type="password" name="clave" placeholder="Contraseña" required><br>
-        <button type="submit">Registrarse</button>
+    <h2>¡Bienvenido a la plataforma!</h2>
+    <p>Por favor, inicia sesión para continuar.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+        <label for="correo">Correo electrónico:</label><br>
+        <input type="email" id="correo" name="correo" required><br><br>
+
+        <label for="clave">Contraseña:</label><br>
+        <input type="password" id="clave" name="clave" required><br><br>
+
+        <button type="submit">Iniciar Sesión</button>
     </form>
-    <a href="{{ url_for('login') }}">Ya tengo cuenta</a>
+
+    <p>¿No tienes una cuenta? <a href="{{ url_for('register') }}">Regístrate aquí</a></p>
 </body>
 </html>

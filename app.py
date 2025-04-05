@@ -4,11 +4,12 @@ from models.models import UserModel
 from models.modelsp import ProductoModel
 from Conexion.conexion import get_connection
 import mysql.connector
+from flask_login import login_required
+
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_super_segura'
 
-# Ruta principal
 @app.route('/')
 def home():
     return redirect(url_for('login'))
@@ -72,6 +73,11 @@ def logout():
     session.clear()
     flash('Sesión cerrada correctamente', 'info')
     return redirect(url_for('login'))
+
+@app.route('/inicio')
+@login_required
+def inicio():
+    return 'Bienvenido a la página principal'
 
 # -------------------------
 # CRUD DE PRODUCTOS
