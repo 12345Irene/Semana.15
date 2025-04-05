@@ -1,29 +1,85 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-import mysql.connector
-from mysql.connector import Error
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+from models.models import UserModel
+from models.modelsp import ProductoModel
 from Conexion.conexion import get_connection
-from models.modelsp import obtener_productos
+import mysql.connector
 
 app = Flask(__name__)
-app.secret_key = 'secret_key'
+app.secret_key = 'clave_secreta_super_segura'
 
-
-# Conexión a la base de datos MySQL
-def get_db_connection():
-    conn = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='12345',  # Asegúrate de cambiar esto por tu contraseña de MySQL
-        database='desarrollo'
-    )
-    return conn
-
-
-# Ruta principal de la página
+# Ruta principal
 @app.route('/')
-def index():
-    return redirect(url_for('productos'))
+def home():
+    return redirect(url_for('login'))
 
+# Login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        correo = request.form['correo']
+        clave = request.form['clave']
+
+        if not correo or not clave:
+            flash('Por favor completa todos los campos', 'danger')
+            return redirect(url_for('login'))
+
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM usuarios WHERE correo = %s", (correo,))
+        usuario = cursor.fetchone()
+        conn.close()
+
+        if usuario and check_password_hash(usuario['clave'], clave):
+            session['usuario_id'] = usuario['id']
+            session['nombre'] = usuario['nombre']
+            flash('Inicio de sesión exitoso', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Correo o contraseña incorrectos', 'danger')
+            return redirect(url_for('login'))
+
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        correo = request.form['correo']
+        clave = request.form['clave']
+
+        hashed_password = generate_password_hash(clave)
+
+        try:
+            UserModel.insert_user(nombre, correo, hashed_password)
+            flash('Usuario registrado con éxito. Ahora puedes iniciar sesión.', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            flash(f'Error al registrar usuario: {str(e)}', 'danger')
+            return redirect(url_for('register'))
+
+    return render_template('register.html')
+
+@app.route('/dashboard')
+def dashboard():
+    if 'usuario_id' not in session:
+        flash('Inicia sesión para acceder al panel', 'warning')
+        return redirect(url_for('login'))
+    return render_template('dashboard.html', nombre=session['nombre'])
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Sesión cerrada correctamente', 'info')
+    return redirect(url_for('login'))
+
+# -------------------------
+# CRUD DE PRODUCTOS
+# -------------------------
+
+def get_db_connection():
+    # Usa la misma función si quieres simplificar (ambas apuntan a MySQL)
+    return get_connection()
 
 # Ruta para ver todos los productos
 @app.route('/productos')
@@ -34,7 +90,6 @@ def productos():
     productos = cursor.fetchall()
     conn.close()
     return render_template('productos.html', productos=productos)
-
 
 # Ruta para crear un nuevo producto
 @app.route('/crear', methods=['GET', 'POST'])
@@ -65,7 +120,6 @@ def crear_producto():
                 flash('El precio y el stock deben ser numéricos', 'danger')
 
     return render_template('formulario.html', action="Crear")
-
 
 # Ruta para editar un producto
 @app.route('/editar/<int:id>', methods=['GET', 'POST'])
@@ -101,7 +155,6 @@ def editar_producto(id):
     conn.close()
     return render_template('formulario.html', action="Editar", producto=producto)
 
-
 # Ruta para eliminar un producto
 @app.route('/eliminar/<int:id>', methods=['GET', 'POST'])
 def eliminar_producto(id):
@@ -111,7 +164,6 @@ def eliminar_producto(id):
     producto = cursor.fetchone()
 
     if request.method == 'POST':
-        # Eliminar el producto
         cursor.execute('DELETE FROM productos WHERE id_producto = %s', (id,))
         conn.commit()
         conn.close()

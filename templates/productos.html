@@ -1,32 +1,61 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container mt-4">
-    <h2>Lista de Productos</h2>
-    <a href="{{ url_for('crear_producto') }}" class="btn btn-primary mb-3">Agregar Producto</a>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for producto in productos %}
-            <tr>
-                <td>{{ producto.id_producto }}</td>
-                <td>{{ producto.nombre }}</td>
-                <td>{{ producto.precio }}</td>
-                <td>{{ producto.stock }}</td>
-                <td>
-                    <a href="{{ url_for('editar_producto', id=producto.id_producto) }}" class="btn btn-warning">Editar</a>
-                    <a href="{{ url_for('eliminar_producto', id=producto.id_producto) }}" class="btn btn-danger">Eliminar</a>
-                </td>
-            </tr>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Productos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <h1 class="mb-4">Lista de Productos</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
             {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endblock %}
+          {% endif %}
+        {% endwith %}
+
+        <a href="{{ url_for('crear_producto') }}" class="btn btn-success mb-3">+ Agregar Producto</a>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos %}
+                <tr>
+                    <td>{{ producto.id_producto }}</td>
+                    <td>{{ producto.nombre }}</td>
+                    <td>${{ producto.precio }}</td>
+                    <td>{{ producto.stock }}</td>
+                    <td>
+                        <a href="{{ url_for('editar_producto', id=producto.id_producto) }}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{{ url_for('eliminar_producto', id=producto.id_producto) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No hay productos disponibles.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary">Cerrar sesión</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

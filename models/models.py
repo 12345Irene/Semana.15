@@ -1,24 +1,44 @@
-import hashlib
-import mysql.connector
 from Conexion.conexion import get_connection
 
-def verificar_usuario(username, password):
-    try:
-        connection = get_connection()
-        cursor = connection.cursor(dictionary=True)
-        query = "SELECT * FROM usuarios WHERE username = %s"
-        cursor.execute(query, (username,))
-        usuario = cursor.fetchone()
+class UserModel:
+    @staticmethod
+    def get_all_users():
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM usuarios")
+        usuarios = cursor.fetchall()
+        conn.close()
+        return usuarios
 
-        if usuario:
-            hashed_password = usuario['password']
-            if hashlib.sha256(password.encode()).hexdigest() == hashed_password:
-                return True
-            else:
-                return False
-        return False
-    except Exception as e:
-        print(f"Error al verificar el usuario: {e}")
-    finally:
-        if connection:
-            connection.close()
+    @staticmethod
+    def get_user_by_id(id_usuario):
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM usuarios WHERE id = %s", (id_usuario,))
+        usuario = cursor.fetchone()
+        conn.close()
+        return usuario
+
+    @staticmethod
+    def insert_user(nombre, correo, clave):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO usuarios (nombre, correo, clave) VALUES (%s, %s, %s)", (nombre, correo, clave))
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def update_user(id_usuario, nombre, correo, clave):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE usuarios SET nombre = %s, correo = %s, clave = %s WHERE id = %s", (nombre, correo, clave, id_usuario))
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def delete_user(id_usuario):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM usuarios WHERE id = %s", (id_usuario,))
+        conn.commit()
+        conn.close()
