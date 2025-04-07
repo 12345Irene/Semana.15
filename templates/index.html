@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio</title>
+    <title>Página Principal</title>
 </head>
 <body>
-    <h1>Bienvenido a la Aplicación Flask con MySQL</h1>
-    <a href="{{ url_for('formulario') }}">Ir al formulario</a><br>
-    <a href="{{ url_for('about') }}">Acerca de</a><br>
-    <a href="{{ url_for('usuarios_tabla') }}">Ver usuarios</a>
+    <h1>Bienvenido a la página principal</h1>
+    <p><a href="{{ url_for('login') }}">Iniciar sesión</a></p>
+    <p><a href="{{ url_for('register') }}">Registrarse</a></p>
 </body>
 </html>

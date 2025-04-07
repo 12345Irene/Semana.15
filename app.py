@@ -1,15 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from models.models import UserModel
+from models.models import Usuario
 from models.modelsp import ProductoModel
 from Conexion.conexion import get_connection
 import mysql.connector
-from flask_login import login_required
-
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_super_segura'
 
+# Ruta principal
 @app.route('/')
 def home():
     return redirect(url_for('login'))
@@ -52,7 +51,7 @@ def register():
         hashed_password = generate_password_hash(clave)
 
         try:
-            UserModel.insert_user(nombre, correo, hashed_password)
+            Usuario.insert_user(nombre, correo, hashed_password)
             flash('Usuario registrado con éxito. Ahora puedes iniciar sesión.', 'success')
             return redirect(url_for('login'))
         except Exception as e:
@@ -73,11 +72,6 @@ def logout():
     session.clear()
     flash('Sesión cerrada correctamente', 'info')
     return redirect(url_for('login'))
-
-@app.route('/inicio')
-@login_required
-def inicio():
-    return 'Bienvenido a la página principal'
 
 # -------------------------
 # CRUD DE PRODUCTOS
